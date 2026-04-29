@@ -7,9 +7,9 @@
         v-if="item.sentiment"
         :class="getSentimentClass(item.sentiment)"
       >
-        [{{ item.sentiment.split('-').map(s => s[0]).join('') }}]
+        {{ item.sentiment.toUpperCase() }}
       </span>
-      <NuxtLink :to="`/news/${item.id}`" class="news-headline" :class="{ amber: item.isAlert }">
+      <NuxtLink :to="`/news/${encodeURIComponent(item.id)}`" class="news-headline" :class="{ amber: item.isAlert }">
         {{ item.headline }}
       </NuxtLink>
     </div>
@@ -34,8 +34,8 @@ const getSentimentClass = (sentiment) => {
 
 <style scoped>
 .news-sentiment {
-  font-size: 11px;
-  width: 40px;
+  font-size: 10px;
+  width: 100px;
   flex-shrink: 0;
   text-transform: uppercase;
   font-weight: bold;

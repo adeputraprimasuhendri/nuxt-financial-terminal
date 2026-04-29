@@ -12,7 +12,7 @@
         <div class="metadata">
           <span class="amber">TIME: {{ article.time }}</span>
           <span class="white"> | SOURCE: {{ article.source }}</span>
-          <span v-if="article.authors.length" class="white"> | BY: {{ article.authors.join(', ') }}</span>
+          <span v-if="article.authors && article.authors.length" class="white"> | BY: {{ article.authors.join(', ') }}</span>
           <span class="white"> | SENTIMENT: </span>
           <span :class="getSentimentClass(article.sentiment)">{{ article.sentiment }}</span>
         </div>
@@ -23,7 +23,7 @@
         </div>
 
         <div class="action-section">
-          <a :href="article.url" target="_blank" class="cyan">[ READ FULL STORY AT {{ article.source?.toUpperCase() }} ]</a>
+          <a :href="article.url" target="_blank" class="cyan">[ READ FULL STORY AT {{ article.source?.toUpperCase() || 'SOURCE' }} ]</a>
         </div>
       </div>
       <div v-else class="down">ARTICLE NOT FOUND</div>
@@ -33,11 +33,12 @@
 
 <script setup>
 const route = useRoute()
-const id = route.params.id
+const id = route.params.id // decoded automatically
 const { newsItems, loading } = useNews()
 
 const article = computed(() => {
-  return newsItems.value.find(item => item.id === id) || newsItems.value[0]
+  // Use decoded ID from route params to find article
+  return newsItems.value.find(item => item.id === id)
 })
 
 const getSentimentClass = (sentiment) => {
