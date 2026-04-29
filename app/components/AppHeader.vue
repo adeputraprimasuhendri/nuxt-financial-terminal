@@ -2,7 +2,7 @@
   <header>
     <div class="command-container">
       <span class="command-label">GO</span>
-      <input id="command-input" type="text" placeholder="XAU CURNCY" />
+      <input id="command-input" type="text" placeholder="XAUUSD" />
     </div>
     <div class="status-bar">
       <span>BLOOMBERG ANYWHERE</span>
