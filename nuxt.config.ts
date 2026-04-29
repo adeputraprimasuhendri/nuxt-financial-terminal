@@ -3,6 +3,11 @@ export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
   devtools: { enabled: true },
   css: ['~/assets/css/main.css'],
+  runtimeConfig: {
+    public: {
+      newsApiKey: '' // Default empty, override via NUXT_PUBLIC_NEWS_API_KEY env var
+    }
+  },
   app: {
     head: {
       link: [

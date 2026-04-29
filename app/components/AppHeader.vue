@@ -13,24 +13,5 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
-
-const currentDate = ref('')
-const currentTime = ref('')
-
-const updateTime = () => {
-  const now = new Date()
-  currentDate.value = now.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).toUpperCase()
-  currentTime.value = now.toLocaleTimeString('en-GB', { hour12: false })
-}
-
-let timer
-onMounted(() => {
-  updateTime()
-  timer = setInterval(updateTime, 1000)
-})
-
-onUnmounted(() => {
-  clearInterval(timer)
-})
+const { currentDate, currentTime } = useClock()
 </script>

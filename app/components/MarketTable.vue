@@ -1,5 +1,6 @@
 <template>
-  <table>
+  <div v-if="loading" style="color: var(--border-gray)">LOADING MARKET DATA...</div>
+  <table v-else>
     <thead>
       <tr>
         <th>SYMBOL</th>
@@ -8,7 +9,7 @@
       </tr>
     </thead>
     <tbody>
-      <tr v-for="item in data" :key="item.symbol">
+      <tr v-for="item in marketRows" :key="item.symbol">
         <td class="cyan">{{ item.symbol }}</td>
         <td class="white">{{ item.price }}</td>
         <td :class="item.change.startsWith('+') ? 'up' : 'down'">{{ item.change }}</td>
@@ -18,14 +19,5 @@
 </template>
 
 <script setup>
-defineProps({
-  data: {
-    type: Array,
-    default: () => [
-      { symbol: 'XAU', price: '2345.67', change: '+0.53%' },
-      { symbol: 'XAG', price: '28.45', change: '-0.12%' },
-      { symbol: 'DXY', price: '104.22', change: '+0.05%' }
-    ]
-  }
-})
+const { marketRows, loading } = useMarketData()
 </script>
