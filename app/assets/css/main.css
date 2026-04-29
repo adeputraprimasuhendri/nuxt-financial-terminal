@@ -1,0 +1,206 @@
+:root {
+    --bg-color: #000000;
+    --primary-amber: #FFA028;
+    --up-green: #00FF00;
+    --down-red: #FF3333;
+    --action-white: #FFFFFF;
+    --accent-cyan: #00FFFF;
+    --border-gray: #333333;
+    --header-bg: #1a1a1a;
+    --font-main: 'Roboto Mono', monospace;
+    --indicator-purple: #C084FC;
+    --indicator-yellow: #FACC15;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html, body {
+    height: 100%;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+}
+
+body {
+    background-color: var(--bg-color);
+    color: var(--primary-amber);
+    font-family: var(--font-main);
+    font-size: 13px;
+}
+
+.terminal-wrapper {
+    height: 100vh;
+    width: 100vw;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+/* Header / Command Bar */
+header {
+    background-color: var(--header-bg);
+    border-bottom: 2px solid var(--primary-amber);
+    display: flex;
+    align-items: center;
+    padding: 5px 10px;
+    gap: 15px;
+}
+
+.command-container {
+    flex-grow: 1;
+    display: flex;
+    align-items: center;
+    background: #222;
+    padding: 2px 5px;
+    border: 1px solid #444;
+}
+
+.command-label {
+    color: var(--primary-amber);
+    font-weight: bold;
+    margin-right: 5px;
+}
+
+#command-input {
+    background: transparent;
+    border: none;
+    color: var(--action-white);
+    font-family: var(--font-main);
+    font-size: 14px;
+    width: 100%;
+    outline: none;
+}
+
+.status-bar {
+    display: flex;
+    gap: 20px;
+    font-size: 12px;
+    color: var(--accent-cyan);
+}
+
+/* Main Layout Grid */
+main {
+    flex-grow: 1;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    gap: 2px;
+    background-color: var(--border-gray);
+    padding: 2px;
+}
+
+.panel {
+    background-color: var(--bg-color);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.panel-header {
+    background-color: #111;
+    padding: 4px 8px;
+    border-bottom: 1px solid var(--border-gray);
+    display: flex;
+    justify-content: space-between;
+    font-weight: bold;
+    color: var(--accent-cyan);
+}
+
+.panel-content {
+    flex-grow: 1;
+    padding: 8px;
+    overflow-y: auto;
+}
+
+/* Components */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+}
+
+th {
+    color: var(--action-white);
+    border-bottom: 1px solid var(--border-gray);
+    padding: 4px;
+    font-weight: normal;
+}
+
+td {
+    padding: 4px;
+}
+
+.up { color: var(--up-green); }
+.down { color: var(--down-red); }
+.white { color: var(--action-white); }
+.cyan { color: var(--accent-cyan); }
+.amber { color: var(--primary-amber); }
+
+/* News List */
+.news-item {
+    margin-bottom: 6px;
+    display: flex;
+    gap: 10px;
+}
+.news-time { color: var(--primary-amber); width: 40px; flex-shrink: 0; }
+.news-headline { color: var(--accent-cyan); cursor: pointer; }
+.news-headline:hover { text-decoration: underline; }
+
+/* Chart Placeholder */
+.chart-container {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    background: #050505;
+}
+
+/* Footer Ticker */
+footer {
+    height: 25px;
+    background: #111;
+    border-top: 1px solid var(--border-gray);
+    overflow: hidden;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+}
+
+.ticker-wrap {
+    width: 100%;
+    overflow: hidden;
+}
+
+.ticker {
+    display: inline-block;
+    padding-left: 100%;
+    animation: ticker 30s linear infinite;
+}
+
+@keyframes ticker {
+    0% { transform: translate(0, 0); }
+    100% { transform: translate(-100%, 0); }
+}
+
+.ticker-item {
+    display: inline-block;
+    padding: 0 20px;
+    color: var(--primary-amber);
+}
+
+.alert-flash {
+    animation: flash 0.5s infinite alternate;
+}
+
+@keyframes flash {
+    from { background-color: transparent; }
+    to { background-color: #330000; }
+}
+
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: #000; }
+::-webkit-scrollbar-thumb { background: #333; }
