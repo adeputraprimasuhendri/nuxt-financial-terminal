@@ -1,6 +1,6 @@
 <template>
   <main>
-    <BasePanel :title="`${activeTicker} — DAILY`" :noPadding="true">
+    <BasePanel :title="`${activeTicker}`" :noPadding="true">
       <template #header-right>
         <span v-if="marketLoading" class="white">FETCHING...</span>
         <span v-else class="up">{{ spotPrice.price }} {{ spotPrice.change }}</span>

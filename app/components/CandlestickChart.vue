@@ -2,27 +2,37 @@
   <div class="chart-container" ref="containerRef">
     <div v-if="loading" class="chart-overlay">LOADING {{ activeTicker }}...</div>
     <div v-if="error" class="chart-overlay chart-overlay--error">{{ error }}</div>
+
+    <div class="timeframe-bar">
+      <button
+        v-for="tf in TIMEFRAMES"
+        :key="tf"
+        :class="['tf-btn', { 'tf-btn--active': activeTimeframe === tf }]"
+        @click="setTimeframe(tf)"
+      >
+        {{ tf.toUpperCase() }}
+      </button>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted, watch } from 'vue'
+import { TIMEFRAMES } from '~/composables/useActiveChart'
 
 const containerRef = ref<HTMLElement | null>(null)
 const { loading, error, fetchAndRender } = useCandlestickChart()
-const { activeTicker } = useActiveChart()
+const { activeTicker, activeTimeframe, setTimeframe } = useActiveChart()
 
-onMounted(() => {
+const load = () => {
   if (containerRef.value) {
-    fetchAndRender(activeTicker.value, containerRef.value)
+    fetchAndRender(activeTicker.value, containerRef.value, activeTimeframe.value)
   }
-})
+}
 
-watch(activeTicker, (ticker) => {
-  if (containerRef.value) {
-    fetchAndRender(ticker, containerRef.value)
-  }
-})
+onMounted(load)
+watch(activeTicker,    load)
+watch(activeTimeframe, load)
 </script>
 
 <style scoped>
@@ -44,5 +54,35 @@ watch(activeTicker, (ticker) => {
 
 .chart-overlay--error {
   color: var(--down-red);
+}
+
+.timeframe-bar {
+  position: absolute;
+  top: 6px;
+  left: 8px;
+  display: flex;
+  gap: 2px;
+  z-index: 10;
+}
+
+.tf-btn {
+  background: transparent;
+  border: 1px solid var(--border-gray);
+  color: var(--border-gray);
+  font-family: var(--font-main);
+  font-size: 11px;
+  padding: 2px 6px;
+  cursor: pointer;
+  letter-spacing: 0.05em;
+}
+
+.tf-btn:hover {
+  border-color: var(--primary-amber);
+  color: var(--primary-amber);
+}
+
+.tf-btn--active {
+  border-color: var(--accent-cyan);
+  color: var(--accent-cyan);
 }
 </style>

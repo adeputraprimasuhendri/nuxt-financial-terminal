@@ -139,13 +139,13 @@ export const useCandlestickChart = () => {
     })
   }
 
-  const fetchAndRender = async (ticker: string, container: HTMLElement) => {
+  const fetchAndRender = async (ticker: string, container: HTMLElement, timeframe = '1d') => {
     if (!ticker) return
     loading.value = true
     error.value   = null
 
     try {
-      const url      = `${BASE_URL}?ticker=${encodeURIComponent(ticker)}&timeframe=1d`
+      const url      = `${BASE_URL}?ticker=${encodeURIComponent(ticker)}&timeframe=${timeframe}`
       const response = await fetch(url)
       const data     = await response.json()
 
