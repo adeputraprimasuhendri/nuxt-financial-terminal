@@ -19,7 +19,7 @@ export const useNews = () => {
     error.value = null
 
     const apiKey = config.public.newsApiKey || 'demo'
-    const url = `https://www.alphavantage.co/query?function=NEWS_SENTIMENT&tickers=GOLD&apikey=${apiKey}`
+    const url = ``
 
     try {
       const data: any = await $fetch(url)

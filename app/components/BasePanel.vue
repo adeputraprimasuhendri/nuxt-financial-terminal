@@ -4,7 +4,7 @@
       <span>{{ title }}</span>
       <slot name="header-right"></slot>
     </div>
-    <div class="panel-content">
+    <div :class="['panel-content', { 'panel-content--no-padding': noPadding }]">
       <slot></slot>
     </div>
   </section>
@@ -15,6 +15,10 @@ defineProps({
   title: {
     type: String,
     required: true
+  },
+  noPadding: {
+    type: Boolean,
+    default: false
   }
 })
 </script>

@@ -19,7 +19,7 @@ export const useMarketData = () => {
     error.value = null
 
     const apiKey = config.public.newsApiKey || 'demo'
-    const url = `https://www.alphavantage.co/query?function=TOP_GAINERS_LOSERS&apikey=${apiKey}`
+    const url = ``
 
     try {
       const data: any = await $fetch(url)

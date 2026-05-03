@@ -1,13 +1,11 @@
 <template>
   <main>
-    <BasePanel title="GOLD SPOT (XAU/USD)">
+    <BasePanel :title="`${activeTicker} — DAILY`" :noPadding="true">
       <template #header-right>
         <span v-if="marketLoading" class="white">FETCHING...</span>
         <span v-else class="up">{{ spotPrice.price }} {{ spotPrice.change }}</span>
       </template>
-      <div class="chart-container">
-        <div style="padding: 20px; color: var(--border-gray)">[ XAU/USD INTRADAY CHART ]</div>
-      </div>
+      <CandlestickChart />
     </BasePanel>
 
     <BasePanel title="TOP NEWS">
@@ -27,6 +25,18 @@
 </template>
 
 <script setup>
+const { activeTicker } = useActiveChart()
 const { spotPrice, loading: marketLoading } = useMarketData()
 const { newsItems, alertItems, loading: newsLoading } = useNews()
+
+useSeoMeta({
+  title: () => `${activeTicker.value} — ALRCA Terminal`,
+  description: 'ADAPTIVE POLYNOMIAL REGRESSION ANALYSIS by Ade Putra Prima Suhendri',
+  ogTitle: () => `${activeTicker.value} — ALRCA Terminal`,
+  ogDescription: 'ADAPTIVE POLYNOMIAL REGRESSION ANALYSIS by Ade Putra Prima Suhendri',
+  ogType: 'website',
+  twitterCard: 'summary_large_image',
+  twitterTitle: () => `${activeTicker.value} — ALRCA Terminal`,
+  twitterDescription: 'ADAPTIVE POLYNOMIAL REGRESSION ANALYSIS by Ade Putra Prima Suhendri',
+})
 </script>
