@@ -6,6 +6,14 @@ const BASE_URL = 'https://terminal-data.alrca.com/marketdata/candles'
 const VOL_UP   = 'rgba(0, 255, 0, 0.35)'
 const VOL_DOWN = 'rgba(255, 51, 51, 0.35)'
 
+const formatPrice = (n: number) =>
+  n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+
+const formatChange = (close: number, open: number) => {
+  const diff = close - open
+  return (diff >= 0 ? '+' : '') + diff.toFixed(2)
+}
+
 const formatCandleData = (rawData: any[]) => {
   return rawData
     .map(c => {
@@ -50,16 +58,32 @@ export const useCandlestickChart = () => {
   const loading           = ref(false)
   const error             = ref<string | null>(null)
 
+  // Shared state — same key as useMarketData
+  const spotPrice = useState<{ price: string; change: string }>(
+    'spotPrice',
+    () => ({ price: '—', change: '—' })
+  )
+
+  // Last candle of the loaded data set — restored when crosshair leaves
+  const lastCandle = ref<{ open: number; close: number } | null>(null)
+
+  const updateSpotPrice = (open: number, close: number) => {
+    spotPrice.value = {
+      price:  formatPrice(close),
+      change: formatChange(close, open),
+    }
+  }
+
   const initChart = (container: HTMLElement) => {
     chart.value = createChart(container, {
       autoSize: true,
       layout: {
         textColor: '#cccccc',
-        background: { type: ColorType.Solid, color: '#1a1a1a' },
+        background: { type: ColorType.Solid, color: '#000000' },
       },
       grid: {
-        vertLines: { color: '#333333' },
-        horzLines: { color: '#333333' },
+        vertLines: { visible: false },
+        horzLines: { visible: false },
       },
     })
 
@@ -73,7 +97,7 @@ export const useCandlestickChart = () => {
     regressionSeries.value = chart.value.addSeries(LineSeries, {
       color: '#00FFFF',
       lineWidth: 2,
-      lineStyle: 0, // solid
+      lineStyle: 0,
       priceScaleId: 'right',
       crosshairMarkerVisible: false,
       lastValueVisible: true,
@@ -89,12 +113,29 @@ export const useCandlestickChart = () => {
       scaleMargins: { top: 0.82, bottom: 0 },
     })
 
+    // Update spotPrice as cursor moves over candles
+    chart.value.subscribeCrosshairMove((param) => {
+      if (!param.time || !param.seriesData.has(series.value)) {
+        // Cursor left the chart — restore last candle
+        if (lastCandle.value) {
+          updateSpotPrice(lastCandle.value.open, lastCandle.value.close)
+        }
+        return
+      }
+
+      const candle = param.seriesData.get(series.value) as any
+      if (candle?.open != null && candle?.close != null) {
+        updateSpotPrice(candle.open, candle.close)
+      }
+    })
+
     onUnmounted(() => {
       chart.value?.remove()
-      chart.value        = null
-      series.value       = null
-      volumeSeries.value = null
+      chart.value            = null
+      series.value           = null
+      volumeSeries.value     = null
       regressionSeries.value = null
+      lastCandle.value       = null
     })
   }
 
@@ -110,12 +151,20 @@ export const useCandlestickChart = () => {
 
       if (!chart.value) initChart(container)
 
-      series.value.setData(formatCandleData(data.data))
+      const candleData = formatCandleData(data.data)
+      series.value.setData(candleData)
       volumeSeries.value.setData(formatVolumeData(data.data))
 
       const regressionData = formatRegressionData(data.data)
       if (regressionData.length > 0) {
         regressionSeries.value.setData(regressionData)
+      }
+
+      // Seed spotPrice with the latest candle
+      const latest = candleData[candleData.length - 1]
+      if (latest) {
+        lastCandle.value = { open: latest.open, close: latest.close }
+        updateSpotPrice(latest.open, latest.close)
       }
     } catch (err) {
       console.error('Chart fetch error:', err)
