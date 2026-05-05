@@ -92,6 +92,25 @@ main {
     gap: 2px;
     background-color: var(--border-gray);
     padding: 2px;
+    min-height: 0;
+}
+
+/* Panel slot wrappers — transparent on desktop, used for mobile tab switching */
+.panel-slot {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    overflow: hidden;
+}
+
+.panel-slot .panel {
+    flex: 1;
+    min-height: 0;
+}
+
+/* Tab bar — desktop hidden, mobile visible */
+.mobile-tab-bar {
+    display: none;
 }
 
 .panel {
@@ -211,3 +230,52 @@ footer {
 ::-webkit-scrollbar { width: 6px; }
 ::-webkit-scrollbar-track { background: #000; }
 ::-webkit-scrollbar-thumb { background: #333; }
+
+/* ─── Mobile Layout ─────────────────────────────────────────── */
+@media (max-width: 768px) {
+    main {
+        display: flex;
+        flex-direction: column;
+        padding: 0;
+        gap: 0;
+        background-color: var(--bg-color);
+    }
+
+    /* Hide all panel slots, show only the active one */
+    .panel-slot {
+        display: none;
+        flex: 1;
+        min-height: 0;
+    }
+
+    .panel-slot.is-active {
+        display: flex;
+    }
+
+    /* Tab bar at bottom of main */
+    .mobile-tab-bar {
+        display: flex;
+        flex-shrink: 0;
+        background-color: var(--header-bg);
+        border-top: 1px solid var(--border-gray);
+    }
+
+    .mobile-tab-bar button {
+        flex: 1;
+        background: transparent;
+        border: none;
+        border-top: 2px solid transparent;
+        color: var(--border-gray);
+        font-family: var(--font-main);
+        font-size: 11px;
+        letter-spacing: 0.05em;
+        padding: 8px 4px;
+        cursor: pointer;
+        transition: color 0.15s, border-color 0.15s;
+    }
+
+    .mobile-tab-bar button.active {
+        color: var(--primary-amber);
+        border-top-color: var(--primary-amber);
+    }
+}
