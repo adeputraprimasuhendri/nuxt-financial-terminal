@@ -26,6 +26,10 @@ html, body {
     overflow: hidden;
 }
 
+html {
+    height: -webkit-fill-available; /* iOS Safari fallback */
+}
+
 body {
     background-color: var(--bg-color);
     color: var(--primary-amber);
@@ -34,7 +38,8 @@ body {
 }
 
 .terminal-wrapper {
-    height: 100vh;
+    height: 100vh;          /* desktop fallback */
+    height: 100dvh;         /* dynamic viewport — accounts for mobile URL bar */
     width: 100vw;
     display: flex;
     flex-direction: column;
@@ -277,5 +282,10 @@ footer {
     .mobile-tab-bar button.active {
         color: var(--primary-amber);
         border-top-color: var(--primary-amber);
+    }
+
+    /* iOS safe area — pads tab bar above home indicator */
+    .mobile-tab-bar {
+        padding-bottom: env(safe-area-inset-bottom);
     }
 }
