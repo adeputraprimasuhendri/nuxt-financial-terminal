@@ -1,10 +1,10 @@
-export type Timeframe = '1d' | '1w' | '1m'
+export type Timeframe = '15m' | '1d' | '1w' | '1M'
 
-export const TIMEFRAMES: Timeframe[] = ['1d', '1w', '1M']
+export const TIMEFRAMES: Timeframe[] = ['15m', '1d', '1w', '1M']
 
 export const useActiveChart = () => {
   const activeTicker    = useState('activeTicker',    () => 'BBCA')
-  const activeTimeframe = useState<Timeframe>('activeTimeframe', () => '1d')
+  const activeTimeframe = useState<Timeframe>('activeTimeframe', () => '15m')
 
   const setTicker = (ticker: string) => {
     const normalized = ticker.trim().toUpperCase()
