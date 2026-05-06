@@ -1,9 +1,19 @@
 import { onMounted } from 'vue'
 
+export interface MarketRow {
+  symbol: string
+  price: string
+  change: string
+  open: string
+  high: string
+  low: string
+  volume: string
+}
+
 export const useMarketData = () => {
   const loading = useState('marketLoading', () => false)
   const spotPrice = useState('spotPrice', () => ({ price: '2,345.67', change: '+12.34' }))
-  const marketRows = useState('marketRows', () => [])
+  const marketRows = useState<MarketRow[]>('marketRows', () => [])
   const error = useState<string | null>('marketError', () => null)
   const isFetching = useState('marketIsFetching', () => false)
 
