@@ -40,6 +40,16 @@ const formatRegressionData = (rawData: any[]) => {
     .sort((a, b) => a.time - b.time)
 }
 
+const formatChannelData = (rawData: any[], field: 'upper_channel' | 'lower_channel') => {
+  return rawData
+    .filter(c => c[field] != null)
+    .map(c => ({
+      time:  Math.floor(c.timestamp) as any,
+      value: Number(c[field]),
+    }))
+    .sort((a, b) => a.time - b.time)
+}
+
 const formatVolumeData = (rawData: any[]) => {
   return rawData
     .map(c => ({
@@ -51,12 +61,14 @@ const formatVolumeData = (rawData: any[]) => {
 }
 
 export const useCandlestickChart = () => {
-  const chart             = ref<ReturnType<typeof createChart> | null>(null)
-  const series            = ref<any>(null)
-  const volumeSeries      = ref<any>(null)
-  const regressionSeries  = ref<any>(null)
-  const loading           = ref(false)
-  const error             = ref<string | null>(null)
+  const chart               = ref<ReturnType<typeof createChart> | null>(null)
+  const series              = ref<any>(null)
+  const volumeSeries        = ref<any>(null)
+  const regressionSeries    = ref<any>(null)
+  const upperChannelSeries  = ref<any>(null)
+  const lowerChannelSeries  = ref<any>(null)
+  const loading             = ref(false)
+  const error               = ref<string | null>(null)
 
   // Shared state — same key as useMarketData
   const spotPrice = useState<{ price: string; change: string }>(
@@ -104,6 +116,28 @@ export const useCandlestickChart = () => {
       priceLineVisible: false,
     })
 
+    // Upper channel — dashed amber line
+    upperChannelSeries.value = chart.value.addSeries(LineSeries, {
+      color: '#FFA500',
+      lineWidth: 1,
+      lineStyle: 1,
+      priceScaleId: 'right',
+      crosshairMarkerVisible: false,
+      lastValueVisible: false,
+      priceLineVisible: false,
+    })
+
+    // Lower channel — dashed red line
+    lowerChannelSeries.value = chart.value.addSeries(LineSeries, {
+      color: '#FF3333',
+      lineWidth: 1,
+      lineStyle: 1,
+      priceScaleId: 'right',
+      crosshairMarkerVisible: false,
+      lastValueVisible: false,
+      priceLineVisible: false,
+    })
+
     // Volume histogram — occupies bottom 20%
     volumeSeries.value = chart.value.addSeries(HistogramSeries, {
       priceFormat: { type: 'volume' },
@@ -131,11 +165,13 @@ export const useCandlestickChart = () => {
 
     onUnmounted(() => {
       chart.value?.remove()
-      chart.value            = null
-      series.value           = null
-      volumeSeries.value     = null
-      regressionSeries.value = null
-      lastCandle.value       = null
+      chart.value              = null
+      series.value             = null
+      volumeSeries.value       = null
+      regressionSeries.value   = null
+      upperChannelSeries.value = null
+      lowerChannelSeries.value = null
+      lastCandle.value         = null
     })
   }
 
@@ -158,6 +194,16 @@ export const useCandlestickChart = () => {
       const regressionData = formatRegressionData(data.data)
       if (regressionData.length > 0) {
         regressionSeries.value.setData(regressionData)
+      }
+
+      const upperData = formatChannelData(data.data, 'upper_channel')
+      if (upperData.length > 0) {
+        upperChannelSeries.value.setData(upperData)
+      }
+
+      const lowerData = formatChannelData(data.data, 'lower_channel')
+      if (lowerData.length > 0) {
+        lowerChannelSeries.value.setData(lowerData)
       }
 
       // Seed spotPrice with the latest candle
