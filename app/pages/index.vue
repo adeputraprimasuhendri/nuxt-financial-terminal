@@ -40,11 +40,9 @@
 </template>
 
 <script setup>
-const { activeTicker } = useActiveChart()
+const { activeTicker, activeTab } = useActiveChart()
 const { spotPrice, loading: marketLoading } = useMarketData()
 const { newsItems, alertItems, loading: newsLoading } = useNews()
-
-const activeTab = ref('chart')
 
 useSeoMeta({
   title: () => `${activeTicker.value} — ALRCA Terminal`,

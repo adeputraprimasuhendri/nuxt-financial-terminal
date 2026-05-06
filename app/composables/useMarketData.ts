@@ -1,12 +1,10 @@
-import { ref, onMounted } from 'vue'
+import { onMounted } from 'vue'
 
 export const useMarketData = () => {
-  const config = useRuntimeConfig()
-  
   const loading = useState('marketLoading', () => false)
   const spotPrice = useState('spotPrice', () => ({ price: '2,345.67', change: '+12.34' }))
   const marketRows = useState('marketRows', () => [])
-  const error = useState('marketError', () => null)
+  const error = useState<string | null>('marketError', () => null)
   const isFetching = useState('marketIsFetching', () => false)
 
   const fetchMarketData = async (force = false) => {
@@ -18,25 +16,28 @@ export const useMarketData = () => {
     loading.value = true
     error.value = null
 
-    const apiKey = config.public.newsApiKey || 'demo'
-    const url = ``
-
     try {
-      const data: any = await $fetch(url)
-      
-      if (data.top_gainers) {
-        marketRows.value = data.top_gainers.slice(0, 10).map((item: any) => ({
-          symbol: item.ticker,
-          price: parseFloat(item.price).toFixed(2),
-          change: (item.change_percentage.startsWith('-') ? '' : '+') + item.change_percentage
-        }))
+      const data: any = await $fetch('https://terminal-data.alrca.com/tickers')
 
-        const topGainer = marketRows.value[0]
-        if (topGainer) {
-          spotPrice.value = { price: '2,345.67', change: topGainer.change }
-        }
-      } else if (data.Note || data.Information) {
-        error.value = 'API LIMIT REACHED'
+      if (data.status === 'success' && Array.isArray(data.data)) {
+        marketRows.value = data.data
+          .filter((item: any) => item.last_quote)
+          .map((item: any) => {
+            const { open, high, low, close, volume } = item.last_quote
+            const changePct = open > 0 ? ((close - open) / open) * 100 : 0
+            const changeStr = (changePct >= 0 ? '+' : '') + changePct.toFixed(2) + '%'
+            return {
+              symbol: item.ticker,
+              price: close.toLocaleString(),
+              change: changeStr,
+              open: open.toLocaleString(),
+              high: high.toLocaleString(),
+              low: low.toLocaleString(),
+              volume: volume.toLocaleString()
+            }
+          })
+      } else {
+        error.value = 'NO DATA'
       }
     } catch (err) {
       console.error('Failed to fetch market data:', err)
