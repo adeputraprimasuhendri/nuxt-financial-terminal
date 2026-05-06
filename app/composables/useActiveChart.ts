@@ -5,7 +5,7 @@ export const TIMEFRAMES: Timeframe[] = ['15m', '1d', '1w', '1M']
 
 export const useActiveChart = () => {
   const activeTicker    = useState('activeTicker',    () => 'BBCA')
-  const activeTimeframe = useState<Timeframe>('activeTimeframe', () => '15m')
+  const activeTimeframe = useState<Timeframe>('activeTimeframe', () => '1d')
   const activeTab       = useState<TabName>('activeTab', () => 'chart')
 
   const setTicker = (ticker: string) => {

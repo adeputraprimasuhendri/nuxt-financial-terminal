@@ -1,4 +1,4 @@
-import { createChart, CandlestickSeries, HistogramSeries, LineSeries, ColorType } from 'lightweight-charts'
+import { createChart, createSeriesMarkers, CandlestickSeries, HistogramSeries, LineSeries, ColorType } from 'lightweight-charts'
 import { ref, onUnmounted } from 'vue'
 
 const BASE_URL = 'https://terminal-data.alrca.com/marketdata/candles'
@@ -40,6 +40,30 @@ const formatRegressionData = (rawData: any[]) => {
     .sort((a, b) => a.time - b.time)
 }
 
+const SIGNAL_CONFIG: Record<string, { position: string; shape: string; color: string; size: number }> = {
+  STRONG_BUY:  { position: 'belowBar', shape: 'arrowUp',   color: '#00FF00', size: 2 },
+  BUY:         { position: 'belowBar', shape: 'arrowUp',   color: '#66FF66', size: 1 },
+  SELL:        { position: 'aboveBar', shape: 'arrowDown', color: '#FF6666', size: 1 },
+  STRONG_SELL: { position: 'aboveBar', shape: 'arrowDown', color: '#FF0000', size: 2 },
+}
+
+const formatSignalMarkers = (rawData: any[]) => {
+  return rawData
+    .filter(c => c.signal && c.signal in SIGNAL_CONFIG)
+    .map(c => {
+      const cfg = SIGNAL_CONFIG[c.signal]!
+      return {
+        time:     Math.floor(c.timestamp) as any,
+        position: cfg.position,
+        shape:    cfg.shape,
+        color:    cfg.color,
+        text:     c.signal,
+        size:     cfg.size,
+      }
+    })
+    .sort((a, b) => a.time - b.time)
+}
+
 const formatChannelData = (rawData: any[], field: 'upper_channel' | 'lower_channel') => {
   return rawData
     .filter(c => c[field] != null)
@@ -63,6 +87,7 @@ const formatVolumeData = (rawData: any[]) => {
 export const useCandlestickChart = () => {
   const chart               = ref<ReturnType<typeof createChart> | null>(null)
   const series              = ref<any>(null)
+  const signalMarkers       = ref<any>(null)
   const volumeSeries        = ref<any>(null)
   const regressionSeries    = ref<any>(null)
   const upperChannelSeries  = ref<any>(null)
@@ -101,6 +126,7 @@ export const useCandlestickChart = () => {
 
     // Candlestick — leave bottom 22% for volume
     series.value = chart.value.addSeries(CandlestickSeries)
+    signalMarkers.value = createSeriesMarkers(series.value)
     chart.value.priceScale('right').applyOptions({
       scaleMargins: { top: 0.05, bottom: 0.22 },
     })
@@ -167,6 +193,7 @@ export const useCandlestickChart = () => {
       chart.value?.remove()
       chart.value              = null
       series.value             = null
+      signalMarkers.value      = null
       volumeSeries.value       = null
       regressionSeries.value   = null
       upperChannelSeries.value = null
@@ -189,6 +216,7 @@ export const useCandlestickChart = () => {
 
       const candleData = formatCandleData(data.data)
       series.value.setData(candleData)
+      signalMarkers.value.setMarkers(formatSignalMarkers(data.data))
       volumeSeries.value.setData(formatVolumeData(data.data))
 
       const regressionData = formatRegressionData(data.data)
