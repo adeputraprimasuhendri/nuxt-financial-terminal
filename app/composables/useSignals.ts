@@ -25,8 +25,17 @@ interface SignalApiResponse {
 }
 
 export const useSignals = () => {
+  // Add a timestamp to bypass any caching layers
   const { data, pending, error, refresh } = useFetch<SignalApiResponse>('https://terminal-data.alrca.com/signals', {
-    key: 'tradingSignalsHistory'
+    key: 'tradingSignalsHistory',
+    params: {
+      _t: Date.now()
+    },
+    headers: {
+      'Cache-Control': 'no-cache, no-store, must-revalidate',
+      'Pragma': 'no-cache',
+      'Expires': '0'
+    }
   })
 
   // Format the time for the table directly in the computed signals
