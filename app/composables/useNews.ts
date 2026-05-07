@@ -1,4 +1,4 @@
-import { ref, onMounted } from 'vue'
+import { onMounted, onUnmounted } from 'vue'
 
 export const useNews = () => {
   const config = useRuntimeConfig()
@@ -8,16 +8,18 @@ export const useNews = () => {
   const error = useState('newsError', () => null)
   const isFetching = useState('newsIsFetching', () => false)
 
-  const fetchNews = async (force = false) => {
-    if ((newsItems.value.length > 0 && !force) || isFetching.value) {
-      return
-    }
+  const fetchNews = async () => {
+    if (isFetching.value) return
 
     isFetching.value = true
-    loading.value = true
+    if (newsItems.value.length === 0) {
+      loading.value = true
+    }
     error.value = null
 
     const apiKey = config.public.newsApiKey || 'demo'
+    // Add a random parameter to Alpha Vantage to try and bypass their cache if any, 
+    // though they usually don't cache at the edge for 'demo' or specific keys
     const url = `https://www.alphavantage.co/query?function=NEWS_SENTIMENT&tickers=XAUUSD&apikey=${apiKey}`
 
     try {
@@ -41,6 +43,7 @@ export const useNews = () => {
           }
         })
       } else if (data.Note || data.Information) {
+        // Alpha Vantage returns Note/Information for rate limits
         error.value = 'API RATE LIMIT EXCEEDED'
       }
     } catch (err) {
@@ -52,8 +55,15 @@ export const useNews = () => {
     }
   }
 
+  let timer: any = null
   onMounted(() => {
     fetchNews()
+    // Update every 5 minutes
+    timer = setInterval(fetchNews, 300000)
+  })
+
+  onUnmounted(() => {
+    if (timer) clearInterval(timer)
   })
 
   return {

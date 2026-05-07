@@ -1,4 +1,4 @@
-import { onMounted } from 'vue'
+import { onMounted, onUnmounted } from 'vue'
 
 export interface MarketRow {
   symbol: string
@@ -12,22 +12,24 @@ export interface MarketRow {
 
 export const useMarketData = () => {
   const loading = useState('marketLoading', () => false)
-  const spotPrice = useState('spotPrice', () => ({ price: '2,345.67', change: '+12.34' }))
+  const spotPrice = useState('spotPrice', () => ({ price: '---', change: '---' }))
   const marketRows = useState<MarketRow[]>('marketRows', () => [])
   const error = useState<string | null>('marketError', () => null)
   const isFetching = useState('marketIsFetching', () => false)
 
-  const fetchMarketData = async (force = false) => {
-    if ((marketRows.value.length > 0 && !force) || isFetching.value) {
-      return
-    }
+  const fetchMarketData = async () => {
+    if (isFetching.value) return
 
     isFetching.value = true
-    loading.value = true
+    if (marketRows.value.length === 0) {
+      loading.value = true
+    }
     error.value = null
 
     try {
-      const data: any = await $fetch('https://terminal-data.alrca.com/tickers')
+      const data: any = await $fetch('https://terminal-data.alrca.com/tickers', {
+        params: { _t: Date.now() }
+      })
 
       if (data.status === 'success' && Array.isArray(data.data)) {
         marketRows.value = data.data
@@ -46,6 +48,12 @@ export const useMarketData = () => {
               volume: volume.toLocaleString()
             }
           })
+          
+        // Update spot price specifically for XAUUSD to show in header
+        const xau = marketRows.value.find(m => m.symbol === 'XAUUSD')
+        if (xau) {
+          spotPrice.value = { price: xau.price, change: xau.change }
+        }
       } else {
         error.value = 'NO DATA'
       }
@@ -58,8 +66,15 @@ export const useMarketData = () => {
     }
   }
 
+  let timer: any = null
   onMounted(() => {
     fetchMarketData()
+    // Update every 15 seconds
+    timer = setInterval(fetchMarketData, 15000)
+  })
+
+  onUnmounted(() => {
+    if (timer) clearInterval(timer)
   })
 
   return {

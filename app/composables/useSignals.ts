@@ -1,4 +1,4 @@
-import { computed } from 'vue'
+import { computed, onMounted, onUnmounted } from 'vue'
 
 export interface TradingSignal {
   id: number
@@ -25,26 +25,51 @@ interface SignalApiResponse {
 }
 
 export const useSignals = () => {
-  // Add a timestamp to bypass any caching layers
-  const { data, pending, error, refresh } = useFetch<SignalApiResponse>('https://terminal-data.alrca.com/signals', {
-    key: 'tradingSignalsHistory',
-    params: {
-      _t: Date.now()
-    },
-    headers: {
-      'Cache-Control': 'no-cache, no-store, must-revalidate',
-      'Pragma': 'no-cache',
-      'Expires': '0'
+  const signalsData = useState<TradingSignal[]>('tradingSignalsData', () => [])
+  const loading = useState('tradingSignalsLoading', () => false)
+  const error = useState<any>('tradingSignalsError', () => null)
+  let timer: any = null
+
+  const fetchSignals = async () => {
+    // Only show loading on initial fetch
+    if (signalsData.value.length === 0) {
+      loading.value = true
     }
-  })
+    
+    try {
+      // Use $fetch directly to bypass useFetch caching behavior in static sites
+      const response = await $fetch<SignalApiResponse>('https://terminal-data.alrca.com/signals', {
+        params: {
+          _t: Date.now()
+        },
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
+          'Expires': '0'
+        }
+      })
+
+      const rawData = response?.data || response
+      if (Array.isArray(rawData)) {
+        signalsData.value = rawData
+      } else if (response && typeof response === 'object' && 'data' in response) {
+         signalsData.value = (response as any).data
+      }
+      
+      error.value = null
+    } catch (err) {
+      console.error('Error fetching signals:', err)
+      error.value = err
+    } finally {
+      loading.value = false
+    }
+  }
 
   // Format the time for the table directly in the computed signals
   const signals = computed(() => {
-    // Handle both wrapped response and raw array (just in case)
-    const rawData = (data.value as any)?.data || data.value
-    if (!rawData || !Array.isArray(rawData)) return []
+    if (!signalsData.value || !Array.isArray(signalsData.value)) return []
     
-    return rawData.map(s => {
+    return signalsData.value.map(s => {
       // Handle ISO format "2026-05-07T08:12:53+07:00"
       let formattedTime = '--:--'
       try {
@@ -74,10 +99,22 @@ export const useSignals = () => {
     })
   })
 
+  onMounted(() => {
+    fetchSignals()
+    // Poll for new signals every 30 seconds
+    timer = setInterval(fetchSignals, 30000)
+  })
+
+  onUnmounted(() => {
+    if (timer) {
+      clearInterval(timer)
+    }
+  })
+
   return {
     signals,
-    loading: pending,
+    loading,
     error,
-    fetchSignals: refresh
+    fetchSignals
   }
 }
