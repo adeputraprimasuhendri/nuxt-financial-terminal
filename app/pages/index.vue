@@ -25,8 +25,9 @@
 
     <div class="panel-slot" :class="{ 'is-active': activeTab === 'alerts' }">
       <BasePanel title="ALERTS">
-        <div v-if="newsLoading" style="color: var(--border-gray)">CHECKING ALERTS...</div>
-        <NewsList v-else :items="alertItems" />
+        <div v-if="signalsLoading" style="color: var(--border-gray)">CHECKING ALERTS...</div>
+        <div v-else-if="!signalItems || signalItems.length === 0" style="color: var(--border-gray); padding: 10px;">NO RECENT ALERTS DETECTED</div>
+        <SignalTable v-else :items="signalItems" />
       </BasePanel>
     </div>
 
@@ -42,7 +43,8 @@
 <script setup>
 const { activeTicker, activeTab } = useActiveChart()
 const { spotPrice, loading: marketLoading } = useMarketData()
-const { newsItems, alertItems, loading: newsLoading } = useNews()
+const { newsItems, loading: newsLoading } = useNews()
+const { signals: signalItems, loading: signalsLoading } = useSignals()
 
 useSeoMeta({
   title: () => `${activeTicker.value} — ALRCA Terminal`,

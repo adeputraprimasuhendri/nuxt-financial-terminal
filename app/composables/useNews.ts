@@ -4,7 +4,6 @@ export const useNews = () => {
   const config = useRuntimeConfig()
   
   const newsItems = useState('newsItems', () => [])
-  const alertItems = useState('alertItems', () => [])
   const loading = useState('newsLoading', () => false)
   const error = useState('newsError', () => null)
   const isFetching = useState('newsIsFetching', () => false)
@@ -19,7 +18,7 @@ export const useNews = () => {
     error.value = null
 
     const apiKey = config.public.newsApiKey || 'demo'
-    const url = ``
+    const url = `https://www.alphavantage.co/query?function=NEWS_SENTIMENT&tickers=XAUUSD&apikey=${apiKey}`
 
     try {
       const data: any = await $fetch(url)
@@ -41,9 +40,6 @@ export const useNews = () => {
             isAlert: item.overall_sentiment_label === 'Bearish' || item.overall_sentiment_label === 'Bullish'
           }
         })
-
-        const topAlert = newsItems.value.find((n: any) => n.isAlert)
-        alertItems.value = topAlert ? [topAlert] : [{ time: 'SYS', headline: 'NO CRITICAL ALERTS DETECTED', isAlert: false }]
       } else if (data.Note || data.Information) {
         error.value = 'API RATE LIMIT EXCEEDED'
       }
@@ -63,7 +59,6 @@ export const useNews = () => {
   return {
     loading,
     newsItems,
-    alertItems,
     error,
     fetchNews
   }

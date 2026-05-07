@@ -34,11 +34,25 @@
 <script setup>
 const route = useRoute()
 const id = route.params.id // decoded automatically
-const { newsItems, loading } = useNews()
+const { newsItems, loading: newsLoading } = useNews()
+const { alertItems: signalItems, loading: signalsLoading } = useSignals()
+
+const loading = computed(() => newsLoading.value || signalsLoading.value)
 
 const article = computed(() => {
   // Use decoded ID from route params to find article
-  return newsItems.value.find(item => item.id === id)
+  const newsArticle = newsItems.value.find(item => item.id === id)
+  if (newsArticle) return newsArticle
+
+  const signalArticle = signalItems.value.find(item => item.id === id)
+  if (signalArticle) {
+    return {
+      ...signalArticle,
+      summary: signalArticle.analysis || 'No detailed analysis available.'
+    }
+  }
+
+  return null
 })
 
 const getSentimentClass = (sentiment) => {
