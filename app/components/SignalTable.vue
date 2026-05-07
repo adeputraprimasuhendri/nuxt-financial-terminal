@@ -15,7 +15,11 @@
         </tr>
       </thead>
       <tbody>
-        <tr v-for="(item, index) in items" :key="index" :class="{ 'active-row': item.status === 'ACTIVE' }">
+        <tr 
+          v-for="(item, index) in items" 
+          :key="index" 
+          :class="{ 'active-row': item.status === 'ACTIVE', 'alert-flash': item.status === 'ACTIVE' }"
+        >
           <td class="white">{{ item.displayTime }}</td>
           <td :class="item.signal === 'BUY' ? 'up' : 'down'">{{ item.signal }}</td>
           <td class="cyan ticker-link" @click="viewDetail(item)">{{ item.pair }}</td>
