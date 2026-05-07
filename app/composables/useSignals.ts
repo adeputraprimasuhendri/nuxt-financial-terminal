@@ -25,52 +25,24 @@ interface SignalApiResponse {
 }
 
 export const useSignals = () => {
-  const signalsData = useState<TradingSignal[]>('tradingSignalsData', () => [])
-  const loading = useState('tradingSignalsLoading', () => false)
-  const error = useState<any>('tradingSignalsError', () => null)
+  // Use useFetch with server: false to ensure it always fetches on the client
+  // and bypasses the static generation cache.
+  const { data, pending, error, refresh } = useFetch<SignalApiResponse>('https://terminal-data.alrca.com/signals', {
+    key: 'tradingSignals',
+    server: false,
+    params: {
+      _t: Date.now()
+    }
+  })
+
   let timer: any = null
-
-  const fetchSignals = async () => {
-    // Only show loading on initial fetch
-    if (signalsData.value.length === 0) {
-      loading.value = true
-    }
-    
-    try {
-      // Use $fetch directly to bypass useFetch caching behavior in static sites
-      const response = await $fetch<SignalApiResponse>('https://terminal-data.alrca.com/signals', {
-        params: {
-          _t: Date.now()
-        },
-        headers: {
-          'Cache-Control': 'no-cache, no-store, must-revalidate',
-          'Pragma': 'no-cache',
-          'Expires': '0'
-        }
-      })
-
-      const rawData = response?.data || response
-      if (Array.isArray(rawData)) {
-        signalsData.value = rawData
-      } else if (response && typeof response === 'object' && 'data' in response) {
-         signalsData.value = (response as any).data
-      }
-      
-      error.value = null
-    } catch (err) {
-      console.error('Error fetching signals:', err)
-      error.value = err
-    } finally {
-      loading.value = false
-    }
-  }
 
   // Format the time for the table directly in the computed signals
   const signals = computed(() => {
-    if (!signalsData.value || !Array.isArray(signalsData.value)) return []
+    const rawData = (data.value as any)?.data || data.value
+    if (!rawData || !Array.isArray(rawData)) return []
     
-    return signalsData.value.map(s => {
-      // Handle ISO format "2026-05-07T08:12:53+07:00"
+    return rawData.map(s => {
       let formattedTime = '--:--'
       try {
         if (s.time) {
@@ -80,7 +52,6 @@ export const useSignals = () => {
           }
         }
       } catch (e) {
-        // Fallback to simple split if ISO parsing fails
         const parts = s.time ? s.time.split(' ') : []
         if (parts.length > 1) {
           formattedTime = parts[1].substring(0, 5)
@@ -100,21 +71,20 @@ export const useSignals = () => {
   })
 
   onMounted(() => {
-    fetchSignals()
     // Poll for new signals every 30 seconds
-    timer = setInterval(fetchSignals, 30000)
+    timer = setInterval(() => {
+      refresh()
+    }, 30000)
   })
 
   onUnmounted(() => {
-    if (timer) {
-      clearInterval(timer)
-    }
+    if (timer) clearInterval(timer)
   })
 
   return {
     signals,
-    loading,
+    loading: pending,
     error,
-    fetchSignals
+    fetchSignals: refresh
   }
 }
