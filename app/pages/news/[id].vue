@@ -35,7 +35,7 @@
 const route = useRoute()
 const id = route.params.id // decoded automatically
 const { newsItems, loading: newsLoading } = useNews()
-const { alertItems: signalItems, loading: signalsLoading } = useSignals()
+const { signals: signalItems, loading: signalsLoading } = useSignals()
 
 const loading = computed(() => newsLoading.value || signalsLoading.value)
 
@@ -44,11 +44,19 @@ const article = computed(() => {
   const newsArticle = newsItems.value.find(item => item.id === id)
   if (newsArticle) return newsArticle
 
-  const signalArticle = signalItems.value.find(item => item.id === id)
-  if (signalArticle) {
-    return {
-      ...signalArticle,
-      summary: signalArticle.analysis || 'No detailed analysis available.'
+  // Check if it's a signal
+  if (id.startsWith('signal-')) {
+    const signalId = parseInt(id.replace('signal-', ''))
+    const signalArticle = signalItems.value.find(item => item.id === signalId)
+    if (signalArticle) {
+      return {
+        ...signalArticle,
+        headline: `${signalArticle.signal} ${signalArticle.pair} @ ${signalArticle.entry}`,
+        source: 'AI MASTER MT5',
+        time: signalArticle.time,
+        sentiment: signalArticle.signal === 'BUY' ? 'Bullish' : 'Bearish',
+        summary: signalArticle.analysis || 'No detailed analysis available.'
+      }
     }
   }
 

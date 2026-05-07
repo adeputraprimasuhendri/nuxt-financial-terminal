@@ -18,7 +18,7 @@
         <tr v-for="(item, index) in items" :key="index" :class="{ 'active-row': item.status === 'ACTIVE' }">
           <td class="white">{{ item.displayTime }}</td>
           <td :class="item.signal === 'BUY' ? 'up' : 'down'">{{ item.signal }}</td>
-          <td class="cyan">{{ item.pair }}</td>
+          <td class="cyan ticker-link" @click="viewDetail(item)">{{ item.pair }}</td>
           <td class="white">{{ item.entry }}</td>
           <td class="up">{{ item.tp1 }}</td>
           <td class="up">{{ item.tp2 }}</td>
@@ -32,12 +32,18 @@
 </template>
 
 <script setup>
+const router = useRouter()
+
 defineProps({
   items: {
     type: Array,
     required: true
   }
 })
+
+const viewDetail = (item) => {
+  router.push(`/news/signal-${item.id}`)
+}
 
 const getStatusClass = (status) => {
   switch (status) {
@@ -60,5 +66,12 @@ const getStatusClass = (status) => {
 
 .active-row {
   background: rgba(255, 153, 0, 0.05);
+}
+
+.ticker-link {
+  cursor: pointer;
+}
+.ticker-link:hover {
+  text-decoration: underline;
 }
 </style>
