@@ -55,6 +55,11 @@ export const useSignals = () => {
 
       return {
         ...s,
+        entry: Math.round(s.entry),
+        sl: Math.round(s.sl),
+        tp1: Math.round(s.tp1),
+        tp2: Math.round(s.tp2),
+        tp3: Math.round(s.tp3),
         displayTime: formattedTime
       }
     })
