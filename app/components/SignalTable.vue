@@ -21,7 +21,7 @@
           :class="{ 'active-row': item.status === 'ACTIVE', 'alert-flash': item.status === 'ACTIVE' }"
         >
           <td class="white">{{ item.displayTime }}</td>
-          <td :class="item.signal === 'BUY' ? 'up' : 'down'">{{ item.signal }}</td>
+          <td :class="item.signal && item.signal.includes('BUY') ? 'up' : 'down'">{{ item.signal }}</td>
           <td class="cyan ticker-link" @click="viewDetail(item)">{{ item.pair }}</td>
           <td class="white">{{ item.entry }}</td>
           <td class="up">{{ item.tp1 }}</td>
