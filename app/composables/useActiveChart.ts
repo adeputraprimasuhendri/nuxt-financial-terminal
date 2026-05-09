@@ -4,7 +4,7 @@ export type TabName = 'chart' | 'news' | 'market' | 'alerts'
 export const TIMEFRAMES: Timeframe[] = ['15m', '1h', '4h', '1d', '1w', '1M']
 
 export const useActiveChart = () => {
-  const activeTicker    = useState('activeTicker',    () => 'BBCA')
+  const activeTicker    = useState('activeTicker',    () => 'XAUUSD')
   const activeTimeframe = useState<Timeframe>('activeTimeframe', () => '1d')
   const activeTab       = useState<TabName>('activeTab', () => 'chart')
 
