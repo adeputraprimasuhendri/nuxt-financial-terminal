@@ -4,11 +4,16 @@ export const useNews = () => {
   const config = useRuntimeConfig()
   
   const apiKey = config.public.newsApiKey || 'demo'
-  const url = `https://www.alphavantage.co/query?function=NEWS_SENTIMENT&tickers=XAUUSD&apikey=${apiKey}`
+  // Use proxied path. Query params are passed as objects in useFetch.
+  const url = '/api/news'
 
   const { data, pending, error, refresh } = useFetch<any>(url, {
     key: 'newsData',
-    server: false
+    query: {
+      function: 'NEWS_SENTIMENT',
+      tickers: 'XAUUSD',
+      apikey: apiKey
+    }
   })
 
   const newsItems = computed(() => {

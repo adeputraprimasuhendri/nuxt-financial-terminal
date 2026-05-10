@@ -1,7 +1,7 @@
 import { createChart, createSeriesMarkers, CandlestickSeries, HistogramSeries, LineSeries, ColorType } from 'lightweight-charts'
 import { ref, onUnmounted } from 'vue'
 
-const BASE_URL = 'https://terminal-data.alrca.com/marketdata/candles'
+const BASE_URL = '/api/candles'
 
 const VOL_UP   = 'rgba(0, 255, 0, 0.35)'
 const VOL_DOWN = 'rgba(255, 51, 51, 0.35)'

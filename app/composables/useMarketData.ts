@@ -19,10 +19,10 @@ export const useMarketData = () => {
     () => ({ price: '---', change: '---' })
   )
   
-  // Use useFetch with server: false for client-side only fetching
-  const { data, pending, error, refresh } = useFetch<any>('https://terminal-data.alrca.com/tickers', {
+  // Use the proxied relative path instead of the full URL.
+  // This works on both server (Docker network) and client (via Nitro proxy).
+  const { data, pending, error, refresh } = useFetch<any>('/api/tickers', {
     key: 'marketData',
-    server: false,
     params: {
       _t: Date.now()
     }
