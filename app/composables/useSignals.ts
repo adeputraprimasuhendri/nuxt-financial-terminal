@@ -25,15 +25,15 @@ interface SignalApiResponse {
 }
 
 export const useSignals = () => {
-  // Use useFetch with server: false to ensure it always fetches on the client
-  // and bypasses the static generation cache.
-  const { data, pending, error, refresh } = useFetch<SignalApiResponse>('http://localhost:8081/signals', {
+  // Use the proxied relative path instead of the full URL.
+  // This works on both server (Docker network) and client (via Nitro proxy).
+  const { data, pending, error, refresh } = useFetch<SignalApiResponse>('/api/signals', {
     key: 'tradingSignals',
-    server: false,
     params: {
       _t: Date.now()
     }
   })
+
 
   let timer: any = null
 

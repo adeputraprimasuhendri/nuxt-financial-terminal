@@ -8,6 +8,11 @@ export default defineNuxtConfig({
       newsApiKey: '' // Default empty, override via NUXT_PUBLIC_NEWS_API_KEY env var
     }
   },
+  routeRules: {
+    '/api/signals': { 
+      proxy: 'http://trade_be:8080/signals' 
+    }
+  },
   app: {
     head: {
       htmlAttrs: { lang: 'en' },
