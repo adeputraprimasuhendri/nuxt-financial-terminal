@@ -14,12 +14,10 @@ node:
   env: dev
 
 steps:
-- name: docker build
+- name: deploy
   commands:
-  -  docker build -t fake/bloomberg:latest .
-- name: docker deploy
+  - docker-compose up -d --build
+  
+- name: docker clean
   commands:
-  - docker stop bloomberg || true
-  - docker rm --force bloomberg || true
-  - docker run --restart=always --name=bloomberg -p 28081:8080 -d fake/bloomberg:latest
   - docker system prune -a --volumes -f

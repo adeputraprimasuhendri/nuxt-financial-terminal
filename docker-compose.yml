@@ -1,0 +1,18 @@
+services:
+  bloomberg:
+    build:
+      context: .
+      args:
+        - ENV=development
+    image: fake/bloomberg:latest
+    container_name: bloomberg
+    ports:
+      - "28081:8080"
+    restart: always
+    networks:
+      - mt5net
+      
+networks:
+  mt5net:
+    name: mt5-novnc_default
+    driver: bridge
