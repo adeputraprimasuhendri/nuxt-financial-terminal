@@ -145,4 +145,47 @@
   font-size: 16px;
   font-weight: 700;
 }
+
+/* ── Mobile ── */
+@media (max-width: 768px) {
+  .portfolio-container {
+    gap: 12px;
+    padding: 2px 0;
+  }
+
+  /* 2 columns on mobile — big enough to read, fits screen */
+  .metrics-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+
+  .metric-card {
+    padding: 12px;
+  }
+
+  .metric-value {
+    font-size: 18px;
+  }
+
+  /* Stats: 2 per row (3 rows of 2) */
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+
+  .stat-block {
+    border: 1px solid var(--border-gray);
+    border-right: 1px solid var(--border-gray);
+    padding: 12px 8px;
+  }
+
+  .stat-val {
+    font-size: 18px;
+  }
+
+  .stat-label {
+    font-size: 9px;
+  }
+}
 </style>
