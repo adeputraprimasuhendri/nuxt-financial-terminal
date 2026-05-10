@@ -27,7 +27,8 @@
       <BasePanel title="ALERTS">
         <div v-if="signalsLoading" style="color: var(--border-gray)">CHECKING ALERTS...</div>
         <div v-else-if="signalsError" style="color: var(--down-red); padding: 10px;">ERROR FETCHING SIGNALS</div>
-        <div v-else-if="!signalItems || signalItems.length === 0" style="color: var(--border-gray); padding: 10px;">NO RECENT ALERTS DETECTED</div>
+        <div v-else-if="!signalItems || signalItems.length === 0" style="color: var(--border-gray); padding: 10px;">NO
+          RECENT ALERTS DETECTED</div>
         <SignalTable v-else :items="signalItems" />
       </BasePanel>
     </div>
@@ -49,12 +50,12 @@ const { signals: signalItems, loading: signalsLoading, error: signalsError } = u
 
 useSeoMeta({
   title: () => `${activeTicker.value} — ALRCA Terminal`,
-  description: 'ADAPTIVE POLYNOMIAL REGRESSION ANALYSIS by Ade Putra Prima Suhendri',
+  description: 'ADAPTIVE POLYNOMIAL REGRESSION ANALYSIS',
   ogTitle: () => `${activeTicker.value} — ALRCA Terminal`,
-  ogDescription: 'ADAPTIVE POLYNOMIAL REGRESSION ANALYSIS by Ade Putra Prima Suhendri',
+  ogDescription: 'ADAPTIVE POLYNOMIAL REGRESSION ANALYSIS',
   ogType: 'website',
   twitterCard: 'summary_large_image',
   twitterTitle: () => `${activeTicker.value} — ALRCA Terminal`,
-  twitterDescription: 'ADAPTIVE POLYNOMIAL REGRESSION ANALYSIS by Ade Putra Prima Suhendri',
+  twitterDescription: 'ADAPTIVE POLYNOMIAL REGRESSION ANALYSIS',
 })
 </script>

@@ -72,14 +72,7 @@ export const useSignals = () => {
   })
 
   onMounted(() => {
-    // Poll for new signals every 30 seconds
-    timer = setInterval(() => {
-      refresh()
-    }, 30000)
-  })
-
-  onUnmounted(() => {
-    if (timer) clearInterval(timer)
+    refresh()
   })
 
   return {
