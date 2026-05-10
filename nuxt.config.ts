@@ -9,10 +9,10 @@ export default defineNuxtConfig({
     }
   },
   routeRules: {
-    '/api/signals': { proxy: 'http://trade_be:8080/signals' },
-    '/api/tickers': { proxy: 'http://trade_be:8080/tickers' },
-    '/api/candles': { proxy: 'http://trade_be:8080/marketdata/candles' },
-    '/api/news': { proxy: 'https://www.alphavantage.co/query' }
+    '/api/signals': { proxy: 'http://trade_be:8081/signals' },
+    '/api/tickers': { proxy: 'https://terminal-data.alrca.com/tickers' },
+    '/api/candles/**': { proxy: 'https://terminal-data.alrca.com/marketdata/candles/**' },
+    '/api/news/**': { proxy: 'https://www.alphavantage.co/query/**' }
   },
   app: {
     head: {
@@ -32,4 +32,5 @@ export default defineNuxtConfig({
     }
   }
 })
+
 
