@@ -1,4 +1,4 @@
-import { computed, onMounted, onUnmounted, watch } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 
 export interface MarketRow {
   symbol: string
@@ -10,55 +10,52 @@ export interface MarketRow {
   volume: string
 }
 
+interface OhlcvTick {
+  ticker: string
+  time: number
+  open: number
+  high: number
+  low: number
+  close: number
+  volume: number
+}
+
+// Connect via the container's own Nginx proxy (/ws/ticks → bridge.alrca.com)
+// Falls back to the external host directly if window is not available (SSR guard)
+const WS_URL = typeof window !== 'undefined'
+  ? `${window.location.protocol === 'https:' ? 'wss' : 'ws'}://${window.location.host}/ws/ticks`
+  : 'wss://bridge.alrca.com/ws/ticks'
+
 export const useMarketData = () => {
   const { activeTicker } = useActiveChart()
-  
+
   // Shared state with useCandlestickChart
   const spotPrice = useState<{ price: string; change: string }>(
     'spotPrice',
     () => ({ price: '---', change: '---' })
   )
-  
-  // Use the proxied relative path instead of the full URL.
-  // This works on both server (Docker network) and client (via Nitro proxy).
-  const { data, pending, error, refresh } = useFetch<any>('/api/tickers', {
-    key: 'marketData',
-    server: false,
-    params: {
-      _t: Date.now()
-    }
-  })
+
+  const loading = ref(true)
+  const error = ref<string | null>(null)
+
+  // Raw tick store keyed by ticker symbol
+  const tickStore = useState<Record<string, OhlcvTick>>('marketDataTicks', () => ({}))
 
   const marketRows = computed<MarketRow[]>(() => {
-    // Robust data extraction: check for wrapped or unwrapped data
-    const rawData = data.value?.status === 'success' ? data.value.data : data.value
-    
-    if (Array.isArray(rawData)) {
-      return rawData
-        .filter((item: any) => item && item.ticker)
-        .map((item: any) => {
-          const quote = item.last_quote || {}
-          const open = quote.open || 0
-          const close = quote.close || 0
-          const high = quote.high || 0
-          const low = quote.low || 0
-          const volume = quote.volume || 0
-          
-          const changePct = open > 0 ? ((close - open) / open) * 100 : 0
-          const changeStr = (changePct >= 0 ? '+' : '') + changePct.toFixed(2) + '%'
-          
-          return {
-            symbol: item.ticker,
-            price: close ? close.toLocaleString() : '---',
-            change: changeStr,
-            open: open ? open.toLocaleString() : '---',
-            high: high ? high.toLocaleString() : '---',
-            low: low ? low.toLocaleString() : '---',
-            volume: volume ? volume.toLocaleString() : '0'
-          }
-        })
-    }
-    return []
+    return Object.values(tickStore.value).map((tick) => {
+      const changePct = tick.open > 0 ? ((tick.close - tick.open) / tick.open) * 100 : 0
+      const changeStr = (changePct >= 0 ? '+' : '') + changePct.toFixed(2) + '%'
+
+      return {
+        symbol: tick.ticker,
+        price: tick.close ? tick.close.toLocaleString() : '---',
+        change: changeStr,
+        open: tick.open ? tick.open.toLocaleString() : '---',
+        high: tick.high ? tick.high.toLocaleString() : '---',
+        low: tick.low ? tick.low.toLocaleString() : '---',
+        volume: tick.volume ? tick.volume.toLocaleString() : '0'
+      }
+    })
   })
 
   // Normalize symbol for matching (e.g. XAUUSD vs XAU/USD)
@@ -68,11 +65,10 @@ export const useMarketData = () => {
   watch([marketRows, activeTicker], () => {
     const ticker = normalize(activeTicker.value)
     const row = marketRows.value.find(m => normalize(m.symbol) === ticker)
-    
+
     if (row) {
       spotPrice.value = { price: row.price, change: row.change }
     } else {
-      // Fallback: try to find anything related to XAU if active ticker not found
       const xau = marketRows.value.find(m => normalize(m.symbol).includes('XAU'))
       if (xau) {
         spotPrice.value = { price: xau.price, change: xau.change }
@@ -80,23 +76,70 @@ export const useMarketData = () => {
     }
   }, { immediate: true })
 
-  let timer: any = null
+  let ws: WebSocket | null = null
+  let reconnectTimer: any = null
+
+  const connect = () => {
+    if (ws) {
+      ws.onclose = null
+      ws.onerror = null
+      ws.close()
+    }
+
+    ws = new WebSocket(WS_URL)
+
+    ws.onopen = () => {
+      loading.value = false
+      error.value = null
+    }
+
+    ws.onmessage = (event: MessageEvent) => {
+      try {
+        const payload = JSON.parse(event.data)
+        const ticks: OhlcvTick[] = payload?.ohlcv ?? []
+
+        if (ticks.length > 0) {
+          const updated = { ...tickStore.value }
+          for (const tick of ticks) {
+            if (tick.ticker) {
+              updated[tick.ticker] = tick
+            }
+          }
+          tickStore.value = updated
+          loading.value = false
+        }
+      } catch {
+        // ignore malformed frames
+      }
+    }
+
+    ws.onerror = () => {
+      error.value = 'WebSocket error'
+    }
+
+    ws.onclose = () => {
+      // Reconnect after 3 seconds
+      reconnectTimer = setTimeout(connect, 3000)
+    }
+  }
+
   onMounted(() => {
-    // Poll every 15 seconds
-    timer = setInterval(() => {
-      refresh()
-    }, 15000)
+    connect()
   })
 
   onUnmounted(() => {
-    if (timer) clearInterval(timer)
+    if (reconnectTimer) clearTimeout(reconnectTimer)
+    if (ws) {
+      ws.onclose = null
+      ws.close()
+    }
   })
 
   return {
-    loading: pending,
+    loading,
     spotPrice,
     marketRows,
     error,
-    fetchMarketData: refresh
+    fetchMarketData: connect
   }
 }
