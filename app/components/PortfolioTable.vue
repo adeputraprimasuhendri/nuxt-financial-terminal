@@ -72,8 +72,8 @@
 .metric-card {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  padding: 14px 16px;
+  gap: 4px;
+  padding: 10px 12px;
   border: 1px solid var(--border-gray);
   background: #0a0a0a;
 }
@@ -95,7 +95,7 @@
 }
 
 .metric-value {
-  font-size: 22px;
+  font-size: 17px;
   font-weight: 700;
   letter-spacing: 0.02em;
 }
@@ -123,8 +123,8 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
-  padding: 10px 8px;
+  gap: 2px;
+  padding: 7px 6px;
   border: 1px solid var(--border-gray);
   border-right: none;
   background: #0a0a0a;
@@ -142,7 +142,7 @@
 }
 
 .stat-val {
-  font-size: 16px;
+  font-size: 13px;
   font-weight: 700;
 }
 
@@ -160,11 +160,11 @@
   }
 
   .metric-card {
-    padding: 12px;
+    padding: 8px 10px;
   }
 
   .metric-value {
-    font-size: 18px;
+    font-size: 15px;
   }
 
   /* Stats: 2 per row (3 rows of 2) */
@@ -177,11 +177,11 @@
   .stat-block {
     border: 1px solid var(--border-gray);
     border-right: 1px solid var(--border-gray);
-    padding: 12px 8px;
+    padding: 8px 6px;
   }
 
   .stat-val {
-    font-size: 18px;
+    font-size: 14px;
   }
 
   .stat-label {
