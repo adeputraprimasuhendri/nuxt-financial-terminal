@@ -27,7 +27,7 @@ interface SignalApiResponse {
 export const useSignals = () => {
   // Use useFetch with server: false to ensure it always fetches on the client
   // and bypasses the static generation cache.
-  const { data, pending, error, refresh } = useFetch<SignalApiResponse>('https://terminal-data.alrca.com/signals', {
+  const { data, pending, error, refresh } = useFetch<SignalApiResponse>('http://trade_be:8080/signals', {
     key: 'tradingSignals',
     server: false,
     params: {
