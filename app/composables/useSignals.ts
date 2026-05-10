@@ -1,4 +1,4 @@
-import { computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 
 export interface TradingSignal {
   id: number
@@ -19,44 +19,70 @@ export interface TradingSignal {
   updated_at: string
 }
 
-interface SignalApiResponse {
-  status: string
-  data: TradingSignal[]
+interface SignalWsMessage {
+  type: string
+  signals: TradingSignal[]
 }
 
+const WS_URL = typeof window !== 'undefined'
+  ? `${window.location.protocol === 'https:' ? 'wss' : 'ws'}://${window.location.host}/ws/signals`
+  : 'ws://api.alrca.com/ws'
+
 export const useSignals = () => {
-  // Use the proxied relative path instead of the full URL.
-  // This works on both server (Docker network) and client (via Nitro proxy).
-  const { data, pending, error, refresh } = useFetch<SignalApiResponse>('/api/signals', {
-    key: 'tradingSignals',
-    server: false, // Force client-side so it shows in Network tab
-    params: {
-      _t: Date.now()
+  const rawSignals = useState<TradingSignal[]>('tradingSignals', () => [])
+  const loading = ref(true)
+  const error = ref<string | null>(null)
+
+  let ws: WebSocket | null = null
+  let reconnectTimer: any = null
+
+  const connect = () => {
+    if (ws) {
+      ws.onclose = null
+      ws.onerror = null
+      ws.close()
     }
-  })
 
+    ws = new WebSocket(WS_URL)
 
-  let timer: any = null
+    ws.onopen = () => {
+      loading.value = false
+      error.value = null
+    }
 
-  // Format the time for the table directly in the computed signals
-  const signals = computed(() => {
-    const rawData = (data.value as any)?.data || data.value
-    if (!rawData || !Array.isArray(rawData)) return []
-    
-    return rawData.map(s => {
+    ws.onmessage = (event: MessageEvent) => {
+      try {
+        const msg: SignalWsMessage = JSON.parse(event.data)
+        if (msg.type === 'signals' && Array.isArray(msg.signals)) {
+          rawSignals.value = msg.signals
+          loading.value = false
+        }
+      } catch {
+        // ignore malformed frames
+      }
+    }
+
+    ws.onerror = () => {
+      error.value = 'WebSocket error'
+    }
+
+    ws.onclose = () => {
+      // Reconnect after 3 seconds
+      reconnectTimer = setTimeout(connect, 3000)
+    }
+  }
+
+  const signals = computed(() =>
+    rawSignals.value.map(s => {
       let formattedTime = '--:--'
       try {
         if (s.time) {
           const timePart = s.time.includes('T') ? s.time.split('T')[1] : s.time.split(' ')[1]
-          if (timePart) {
-            formattedTime = timePart.substring(0, 5)
-          }
+          if (timePart) formattedTime = timePart.substring(0, 5)
         }
-      } catch (e) {
+      } catch {
         const parts = s.time ? s.time.split(' ') : []
-        if (parts.length > 1) {
-          formattedTime = parts[1].substring(0, 5)
-        }
+        if (parts[1]) formattedTime = parts[1].substring(0, 5)
       }
 
       return {
@@ -69,16 +95,24 @@ export const useSignals = () => {
         displayTime: formattedTime
       }
     })
-  })
+  )
 
   onMounted(() => {
-    refresh()
+    connect()
+  })
+
+  onUnmounted(() => {
+    if (reconnectTimer) clearTimeout(reconnectTimer)
+    if (ws) {
+      ws.onclose = null
+      ws.close()
+    }
   })
 
   return {
     signals,
-    loading: pending,
+    loading,
     error,
-    fetchSignals: refresh
+    fetchSignals: connect
   }
 }
