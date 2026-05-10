@@ -11,8 +11,8 @@ export default defineNuxtConfig({
   routeRules: {
     // Exact paths for cleaner proxying
     '/api/signals': { proxy: 'http://trade_be:8080/signals' },
-    '/api/tickers': { proxy: 'https://terminal-data.alrca.com/tickers' },
-    '/api/candles': { proxy: 'https://terminal-data.alrca.com/marketdata/candles' },
+    '/api/tickers': { proxy: 'http://trade_be:8080/tickers' },
+    '/api/candles': { proxy: 'http://trade_be:8080/marketdata/candles' },
     '/api/news': { proxy: 'https://www.alphavantage.co/query' }
   },
   app: {
