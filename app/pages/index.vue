@@ -33,11 +33,25 @@
       </BasePanel>
     </div>
 
+    <div class="panel-slot" :class="{ 'is-active': activeTab === 'portfolio' }">
+      <BasePanel title="PORTFOLIO">
+        <PortfolioTable />
+      </BasePanel>
+    </div>
+
+    <div class="panel-slot" :class="{ 'is-active': activeTab === 'orders' }">
+      <BasePanel title="EXECUTION ORDER">
+        <OrderTable />
+      </BasePanel>
+    </div>
+
     <nav class="mobile-tab-bar">
       <button @click="activeTab = 'chart'" :class="{ active: activeTab === 'chart' }">CHART</button>
       <button @click="activeTab = 'news'" :class="{ active: activeTab === 'news' }">NEWS</button>
       <button @click="activeTab = 'market'" :class="{ active: activeTab === 'market' }">MARKET</button>
       <button @click="activeTab = 'alerts'" :class="{ active: activeTab === 'alerts' }">ALERTS</button>
+      <button @click="activeTab = 'portfolio'" :class="{ active: activeTab === 'portfolio' }">PORTFOLIO</button>
+      <button @click="activeTab = 'orders'" :class="{ active: activeTab === 'orders' }">ORDERS</button>
     </nav>
   </main>
 </template>

@@ -1,5 +1,5 @@
 export type Timeframe = '15m' | '1h' | '4h' |'1d' | '1w' | '1M'
-export type TabName = 'chart' | 'news' | 'market' | 'alerts'
+export type TabName = 'chart' | 'news' | 'market' | 'alerts' | 'portfolio' | 'orders'
 
 export const TIMEFRAMES: Timeframe[] = ['15m', '1h', '4h', '1d', '1w', '1M']
 
