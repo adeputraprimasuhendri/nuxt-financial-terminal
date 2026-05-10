@@ -29,6 +29,7 @@ export const useSignals = () => {
   // This works on both server (Docker network) and client (via Nitro proxy).
   const { data, pending, error, refresh } = useFetch<SignalApiResponse>('/api/signals', {
     key: 'tradingSignals',
+    server: false, // Force client-side so it shows in Network tab
     params: {
       _t: Date.now()
     }

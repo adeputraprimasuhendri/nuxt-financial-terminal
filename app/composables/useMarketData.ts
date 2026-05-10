@@ -23,6 +23,7 @@ export const useMarketData = () => {
   // This works on both server (Docker network) and client (via Nitro proxy).
   const { data, pending, error, refresh } = useFetch<any>('/api/tickers', {
     key: 'marketData',
+    server: false,
     params: {
       _t: Date.now()
     }
