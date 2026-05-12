@@ -4,7 +4,7 @@ name: Development Pipeline Exec
 
 platform:
   os: linux
-  arch: amd64
+  arch: arm64
 
 trigger:
   branch:
