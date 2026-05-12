@@ -1,34 +1,23 @@
 kind: pipeline
-type: docker
-name: Development Pipeline
+type: exec
+name: Development Pipeline Exec
+
+platform:
+  os: linux
+  arch: amd64
 
 trigger:
   branch:
     - development
 
+node:
+  env: dev
+
 steps:
-  - name: deploy
-    image: docker:cli
+- name: deploy
+  commands:
+  - docker compose down && docker compose up -d --build
 
-    volumes:
-      - name: dockersock
-        path: /var/run/docker.sock
-
-    commands:
-      - docker compose down
-      - docker compose up -d --build
-
-  - name: docker-clean
-    image: docker:cli
-
-    volumes:
-      - name: dockersock
-        path: /var/run/docker.sock
-
-    commands:
-      - docker system prune -a --volumes -f
-
-volumes:
-  - name: dockersock
-    host:
-      path: /var/run/docker.sock
+- name: docker clean
+  commands:
+  - docker system prune -a --volumes -f
