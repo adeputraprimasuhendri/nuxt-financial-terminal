@@ -1,5 +1,6 @@
 import { createChart, createSeriesMarkers, CandlestickSeries, HistogramSeries, LineSeries, ColorType } from 'lightweight-charts'
-import { ref, onUnmounted } from 'vue'
+import { ref, onUnmounted, watch } from 'vue'
+import { useActiveChart } from './useActiveChart'
 
 const BASE_URL = '/api/candles'
 
@@ -103,6 +104,7 @@ export const useCandlestickChart = () => {
 
   // Last candle of the loaded data set — restored when crosshair leaves
   const lastCandle = ref<{ open: number; close: number } | null>(null)
+  const lastCandleRecord = ref<any>(null)
 
   const updateSpotPrice = (open: number, close: number) => {
     spotPrice.value = {
@@ -238,6 +240,7 @@ export const useCandlestickChart = () => {
       const latest = candleData[candleData.length - 1]
       if (latest) {
         lastCandle.value = { open: latest.open, close: latest.close }
+        lastCandleRecord.value = { ...latest }
         updateSpotPrice(latest.open, latest.close)
       }
     } catch (err) {
@@ -247,6 +250,47 @@ export const useCandlestickChart = () => {
       loading.value = false
     }
   }
+
+  // Real-time updates
+  const { activeTicker, activeTimeframe } = useActiveChart()
+  const tickStore = useState<Record<string, any>>('marketDataTicks', () => ({}))
+
+  const normalize = (s: string) => s ? s.replace(/[^A-Z0-9]/gi, '').toUpperCase() : ''
+
+  watch(tickStore, (ticks) => {
+    if (!series.value || !volumeSeries.value || !lastCandleRecord.value) return
+
+    const symbol = normalize(activeTicker.value)
+    const tickerKey = Object.keys(ticks).find(k => normalize(k) === symbol)
+    if (!tickerKey) return
+
+    const tick = ticks[tickerKey]
+    const isDaily = activeTimeframe.value === '1d'
+
+    // We update the last candle's bucket to show live price movement
+    const time = lastCandleRecord.value.time
+
+    const updateData = {
+      time: time as any,
+      open: isDaily ? tick.open : lastCandleRecord.value.open,
+      high: isDaily ? tick.high : Math.max(lastCandleRecord.value.high, tick.close),
+      low: isDaily ? tick.low : Math.min(lastCandleRecord.value.low, tick.close),
+      close: tick.close
+    }
+
+    series.value.update(updateData)
+
+    volumeSeries.value.update({
+      time: time as any,
+      value: isDaily ? tick.volume : lastCandleRecord.value.volume,
+      color: updateData.close >= updateData.open ? VOL_UP : VOL_DOWN
+    })
+
+    // Update references
+    lastCandleRecord.value = { ...updateData }
+    lastCandle.value = { open: updateData.open, close: updateData.close }
+    updateSpotPrice(updateData.open, updateData.close)
+  }, { deep: true })
 
   return { loading, error, fetchAndRender }
 }
